@@ -53,16 +53,16 @@ const canvasElement = document.getElementById('canvas') as (HTMLCanvasElement | 
 
 const p1 = new Circle(50, 50, DEFAULT_RADIUS)
 const p2 = new Circle(200, 100, DEFAULT_RADIUS)
-// const p3 = new Circle(200, 200, DEFAULT_RADIUS)
-// const p4 = new Circle(100, 200, DEFAULT_RADIUS)
+const p3 = new Circle(200, 200, DEFAULT_RADIUS)
+const p4 = new Circle(100, 200, DEFAULT_RADIUS)
 
 const s1 = new Segment(p1, p2)
-// const s2 = new Segment(p2, p3)
-// const s3 = new Segment(p3, p4)
-// const s4 = new Segment(p4, p1)
+const s2 = new Segment(p2, p3)
+const s3 = new Segment(p3, p4)
+const s4 = new Segment(p4, p1)
 
-// const figure = new Figure([p1, p2, p3, p4], [s1, s2, s3, s4])
-const figure = new Figure([p1, p2], [s1])
+const figure = new Figure([p1, p2, p3, p4], [s1, s2, s3, s4])
+// const figure = new Figure([p1, p2], [s1])
 
 const graphEditor = new GraphEditor(canvasElement, figure)
 
