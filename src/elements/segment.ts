@@ -3,7 +3,7 @@ import { Point } from "./point";
 
 type Options = { width?: number, color?: string, dash?: [number, number] | [] }
 export class Segment {
-    width: number = 0
+
     nearestToOrigin: Circle | null
     furthestToOrigin: Circle | null
     options: Options | null
@@ -35,6 +35,10 @@ export class Segment {
         this.furthestToOrigin = Math.hypot(x1, y1) > Math.hypot(x2, y2) ? this.p1 : this.p2
     }
 
+    checkOrientation(circle: Circle) {
+        orientation(this.p1.center, this.p2.center, circle.center)
+    }
+
 
     isPointNearSegment(point: Circle) {
 
@@ -61,8 +65,55 @@ export class Segment {
 
     }
 
+    isIntersectSegment(segment: Segment) {
+        const {xCoord: x1, yCoord: y1} = this.p1.center
+        const {xCoord: x2, yCoord: y2} = this.p2.center
+
+        const {xCoord: x3, yCoord: y3} = segment.p1.center
+        const {xCoord: x4, yCoord: y4} = segment.p2.center
+
+        const sCoeff1 = x2 - x1
+        const tCoeff1 = -(x4 - x3)
+        const freeCoeff1 = x3-x1
+
+        const sCoeff2 = y2 - y1 
+        const tCoeff2 = -(y4 - y3)
+        const freeCoeff2 = y3-y1
+
+        console.log('sCoeff1,tCoeff1,freeCoeff1', sCoeff1,tCoeff1,freeCoeff1);
+        console.log('sCoeff2, tCoeff2, freeCoeff2]', sCoeff2, tCoeff2, freeCoeff2);
+        
+        const result = kramersMethod([sCoeff1,tCoeff1,freeCoeff1], [sCoeff2, tCoeff2, freeCoeff2])
+        // const result = kramersMethod([3,-2,6], [5, 4, 32])
+        console.log('result', result);
+        
+        return result
+    }
+
     setSegmentColor(color: string) {
         this.options = { ...this.options, color }
+    }
+
+    doIntersect(segment: Segment ) {
+        const {p1, p2} = this
+        const {p1: q1, p2:q2} = segment
+        // console.log('--------');
+        
+        // console.log('q1.center', this.p1.center, q1.center, this.p2.center);
+        
+        const o1 = orientation(p1.center, p2.center, q1.center); 
+        const o2 = orientation(p1.center, q2.center, q1.center); 
+        const o3 = orientation(p2.center, p1.center, q2.center); 
+        const o4 = orientation(p2.center, q1.center, q2.center);
+        
+        if (o1 != o2 && o3 != o4) {
+            console.log(12312312);
+            
+            return true; 
+        }
+
+        return false;
+
     }
 
 
@@ -86,4 +137,56 @@ export class Segment {
 
     }
 
+}
+
+function orientation(p1:Point, p2: Point, o3: Point) {
+
+    // orientation of an (x, y) triplet
+    const val = ((p2.yCoord - p1.yCoord) * (o3.xCoord - p2.xCoord)) -
+                ((p2.xCoord - p1.xCoord) * (o3.yCoord - p2.yCoord));
+
+                // console.log('val', val);
+                
+    if (val === 0) {
+        // console.log("Collinear");
+        return 0
+    }
+    else if (val > 0){
+        // console.log("Clockwise");
+        return 1
+    }
+        // console.log("CounterClockwise");
+        return -1
+}
+
+
+
+
+const kramersMethod = (firstLine: [number,number,number], secondLine: [number,number,number]) => {
+    let x = 0
+    let y = 0
+
+    const delta = firstLine[0] * secondLine[1] - firstLine[1]*secondLine[0]
+    const deltaX = firstLine[2] * secondLine[1] - firstLine[1]*secondLine[2]
+    const deltaY = firstLine[0] * secondLine[2] - firstLine[2]*secondLine[0]
+
+    console.log('delta', delta);
+    console.log('deltaX', deltaX);
+    console.log('deltaY', deltaY);
+    
+    if (delta) {
+        x = deltaX / delta
+        y = deltaY / delta
+    } else {
+        return null
+    }
+
+    if (x < 0 && y > 1) {
+        return null
+    }
+
+    console.log('x, y', x, y);
+
+    return [(delta+deltaY)/delta, (delta+deltaX)/delta ]
+    
 }

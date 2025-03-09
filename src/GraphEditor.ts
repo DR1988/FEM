@@ -65,7 +65,9 @@ export class GraphEditor {
 
     private selectPoint(circle: Circle) {
         if (this.selected) {
-            this.figure.addSegment(new Segment(this.selected, circle))
+            const newSegment = new Segment(this.selected, circle)
+            // this.figure.allSegments.find(seg => seg.isIntersectSegment(newSegment))
+            this.figure.addSegment(newSegment)
         }
         this.selected = circle
     }
@@ -107,6 +109,19 @@ export class GraphEditor {
             this.hoveredSegment = null
         }
 
+        if (this.selected) {
+            console.log('--------------');
+            
+            console.log('this.selected', this.selected);
+            console.log('circle', circle);
+            
+            
+            const segment = new Segment(this.selected, circle)
+            const foundIntersectSegment = this.figure.allSegments.find(s => s.doIntersect(segment))
+            console.log('foundIntersectSegment', foundIntersectSegment);
+        }
+        
+
     }, 50)
 
     private hoverOverSegment = (event: MouseEvent) => {
@@ -135,8 +150,12 @@ export class GraphEditor {
             const intent = this.hovered ?? this.mouse
             const segment = new Segment(intent, this.selected)
 
-            const foundSegment = this.figure.allSegments.find(s => s.equals(segment))
 
+            const foundSegment = this.figure.allSegments.find(s => s.equals(segment))
+            // const foundIntersectSegment = this.figure.allSegments.find(s => s.doIntersect(segment))
+
+            // console.log('foundIntersectSegment', foundIntersectSegment);
+            
             if (foundSegment) {
                 segment.draw(this.ctx, { width: 3, color: 'red' })
             } else {
