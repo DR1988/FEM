@@ -2,17 +2,17 @@ import { Circle } from "./elements/cirlce";
 import { Segment } from "./elements/segment";
 
 export class Figure {
-    constructor(private circles: Circle[], private segments: Segment[]) { 
-        if (segments.length >= 2) {
+    constructor(private circles: Circle[], private segments: Segment[]) {
+        // if (segments.length >= 2) {
 
-            
-            const result = segments[0].isIntersectSegment(segments[1])
 
-            if (result) {
-                const newCirlce = new Circle(result[0], result[1], 6)
-                this.circles.push(newCirlce)
-            }
-        }
+        //     const result = segments[0].isIntersectSegment(segments[1])
+
+        //     if (result) {
+        //         const newCirlce = new Circle(result[0], result[1], 6)
+        //         this.circles.push(newCirlce)
+        //     }
+        // }
     }
 
 

@@ -9,6 +9,7 @@ export class GraphEditor {
     selected: Circle | null
     hovered: Circle | null
     hoveredSegment: Segment | null
+    foundIntersectSegment: Map<Segment, boolean>
     mouse: Circle | null
     dragging: boolean
     draggable: boolean
@@ -20,6 +21,7 @@ export class GraphEditor {
         this.hovered = null
         this.dragging = false
         this.draggable = false
+        this.foundIntersectSegment = new Map()
         this.addListners()
     }
 
@@ -56,8 +58,12 @@ export class GraphEditor {
                 return
             }
 
-            this.figure.addPoint(this.mouse)
-            this.selectPoint(this.mouse)
+            // if (!this.foundIntersectSegment) {
+            if (this.foundIntersectSegment.size === 0) {
+                this.figure.addPoint(this.mouse)
+                this.selectPoint(this.mouse)
+            }
+            // }
             this.hovered = this.mouse
 
         }
@@ -68,6 +74,8 @@ export class GraphEditor {
             const newSegment = new Segment(this.selected, circle)
             // this.figure.allSegments.find(seg => seg.isIntersectSegment(newSegment))
             this.figure.addSegment(newSegment)
+
+
         }
         this.selected = circle
     }
@@ -110,17 +118,20 @@ export class GraphEditor {
         }
 
         if (this.selected) {
-            console.log('--------------');
-            
-            console.log('this.selected', this.selected);
-            console.log('circle', circle);
-            
-            
+
             const segment = new Segment(this.selected, circle)
-            const foundIntersectSegment = this.figure.allSegments.find(s => s.doIntersect(segment))
-            console.log('foundIntersectSegment', foundIntersectSegment);
+
+            this.figure.allSegments.forEach(s => {
+
+                if (s.doIntersect(segment) && !s.hasSameEndPoint(segment)) {
+                    s.setSegmentColor('red')
+                    this.foundIntersectSegment.set(s, true)
+                } else if (this.foundIntersectSegment.has(s)) {
+                    s.setSegmentColor('black')
+                    this.foundIntersectSegment.delete(s)
+                }
+            })
         }
-        
 
     }, 50)
 
@@ -155,7 +166,7 @@ export class GraphEditor {
             // const foundIntersectSegment = this.figure.allSegments.find(s => s.doIntersect(segment))
 
             // console.log('foundIntersectSegment', foundIntersectSegment);
-            
+
             if (foundSegment) {
                 segment.draw(this.ctx, { width: 3, color: 'red' })
             } else {
