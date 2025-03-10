@@ -13,6 +13,7 @@ export class GraphEditor {
     mouse: Circle | null
     dragging: boolean
     draggable: boolean
+    steps: []
 
     constructor(private canvas: HTMLCanvasElement, private figure: Figure) {
 
@@ -48,6 +49,12 @@ export class GraphEditor {
                 this.figure.removeSegment(this.hoveredSegment)
                 this.hoveredSegment = null
             }
+
+            if (this.foundIntersectSegment.size !== 0) {
+                this.foundIntersectSegment.forEach((value, seg) => seg.setSegmentColor('black'))
+                this.foundIntersectSegment.clear()
+            }
+
         }
 
         if (event.button === 0) { // left click
@@ -62,9 +69,10 @@ export class GraphEditor {
             if (this.foundIntersectSegment.size === 0) {
                 this.figure.addPoint(this.mouse)
                 this.selectPoint(this.mouse)
+                this.hovered = this.mouse
+
             }
             // }
-            this.hovered = this.mouse
 
         }
     }
@@ -160,12 +168,7 @@ export class GraphEditor {
         if (this.selected) {
             const intent = this.hovered ?? this.mouse
             const segment = new Segment(intent, this.selected)
-
-
             const foundSegment = this.figure.allSegments.find(s => s.equals(segment))
-            // const foundIntersectSegment = this.figure.allSegments.find(s => s.doIntersect(segment))
-
-            // console.log('foundIntersectSegment', foundIntersectSegment);
 
             if (foundSegment) {
                 segment.draw(this.ctx, { width: 3, color: 'red' })
