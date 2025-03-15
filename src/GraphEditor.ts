@@ -3,6 +3,9 @@ import { Circle } from "./elements/cirlce";
 import { Segment } from "./elements/segment";
 import { Figure } from "./figure";
 import { throttle } from 'lodash'
+import { Triangulation } from "./triangulation";
+import { Vertex } from "./elements/Vertext";
+
 
 export class GraphEditor {
     ctx: CanvasRenderingContext2D
@@ -14,6 +17,7 @@ export class GraphEditor {
     dragging: boolean
     draggable: boolean
     steps: []
+    triangulation: Triangulation | null
 
     constructor(private canvas: HTMLCanvasElement, private figure: Figure) {
 
@@ -35,6 +39,15 @@ export class GraphEditor {
         const radius = center.radius + point.radius
 
         return Math.hypot(center.center.xCoord - point.center.xCoord, center.center.yCoord - point.center.yCoord) < radius
+    }
+
+    get circles() {
+        return this.figure.allCircles
+    }
+
+    triangulate() {
+        this.triangulation = new Triangulation(this.figure)
+        this.triangulation.sortByHighestPont()
     }
 
     private handleMouseDown = (event: MouseEvent) => {
@@ -89,7 +102,7 @@ export class GraphEditor {
     }
 
     private handleMousemove = (event: MouseEvent) => {
-        this.mouse = new Circle(event.offsetX, event.offsetY, DEFAULT_RADIUS)
+        this.mouse = new Vertex(event.offsetX, event.offsetY)
 
         this.hovered = this.figure.allCircles.find(c => this.isNearDot(c, this.mouse))
         if (this.draggable && this.selected) {
@@ -111,7 +124,7 @@ export class GraphEditor {
 
     private throttleHoverOverSegment = throttle((event: MouseEvent) => {
         // console.log(event.offsetX, event.offsetY)
-        const circle = new Circle(event.offsetX, event.offsetY, DEFAULT_RADIUS)
+        const circle = new Vertex(event.offsetX, event.offsetY)
         const hoveredSegment = this.figure.allSegments.find(seg => {
             return seg.isPointNearSegment(circle)
         })
@@ -164,6 +177,7 @@ export class GraphEditor {
     display() {
 
         this.figure.draw(this.ctx)
+        this.triangulation?.draw(this.ctx)
 
         if (this.selected) {
             const intent = this.hovered ?? this.mouse

@@ -1,8 +1,9 @@
 import { Circle } from "./elements/cirlce";
 import { Segment } from "./elements/segment";
+import { Vertex } from "./elements/Vertext";
 
 export class Figure {
-    constructor(private circles: Circle[], private segments: Segment[]) {
+    constructor(private circles: Vertex[], private segments: Segment[]) {
         // if (segments.length >= 2) {
 
 
@@ -24,7 +25,7 @@ export class Figure {
         return this.segments
     }
 
-    addPoint(circle: Circle) {
+    addPoint(circle: Vertex) {
         this.circles.push(circle)
     }
 
