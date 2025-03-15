@@ -13,10 +13,7 @@
     "resolveJsonModule": true,
     "paths": {
       "*": ["node_modules/*"]
-    },
-    "lib": [
-      "ES2023.Array", "DOM", "ESNext"
-    ]
+    }
   },
   "include": ["src/**/*"]
 }

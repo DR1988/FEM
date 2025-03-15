@@ -32,10 +32,14 @@ export class Vertex extends Circle {
     }
 
     set Options(options: ConstructOptions) {
-        this.options = {
-            ...this.options,
-            ...options,
-        }
+        Object.entries(options).forEach(([key, value]) => {
+            if (value) {
+                this.options = {
+                    ...this.options,
+                    [key]: value
+                }
+            }
+        })
     }
 
     draw(ctx: CanvasRenderingContext2D) {
@@ -45,6 +49,7 @@ export class Vertex extends Circle {
                 ctx.moveTo(this.center.xCoord, this.center.yCoord - this.options.size);
                 ctx.lineTo(this.center.xCoord - this.options.size, this.center.yCoord + this.options.size);
                 ctx.lineTo(this.center.xCoord + this.options.size, this.center.yCoord + this.options.size);
+                ctx.fillStyle = this.options.color
                 ctx.fill();
                 break;
             case "circle":

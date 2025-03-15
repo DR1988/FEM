@@ -12,6 +12,52 @@ export class Triangulation {
         return this.vertexes
     }
 
+    sortByClockWise() {
+        const sortArray: Vertex[] = []
+        let currentVertex: Vertex| null = null // start from highest one
+        let hightes = Number.MAX_SAFE_INTEGER
+        this.figure.allCircles.forEach(vertex => {
+            if (vertex.center.yCoord < hightes ) {
+                hightes = vertex.center.yCoord 
+                currentVertex = vertex
+            }
+        })
+        console.log('highestVertex', currentVertex)
+        sortArray.push(currentVertex)
+
+        
+        while(sortArray.length < this.figure.allSegments.length) {
+
+            const segments = this.figure.allSegments.filter(segment => segment.includesPoint(currentVertex))
+
+            const checkingVertex = segments.map(segm => {
+                return segm.AllPoints.find(p => !p.isEqual(currentVertex))
+            })
+
+            const nextVertex = checkingVertex.reduce((acc, current) => {
+                // if (sortArray.includes(current)) {
+                //     return current
+                // }
+                if (!acc) {
+                    return current
+                } else {
+                    if ((acc.center.xCoord > current.center.xCoord && acc.center.yCoord >= current.center.yCoord) ||
+                        (acc.center.xCoord < current.center.xCoord && acc.center.yCoord < current.center.yCoord)
+                    ) {
+                        return current
+                    }
+                }
+                return acc
+            })
+            
+            currentVertex = nextVertex
+            sortArray.push(nextVertex)
+        }
+        
+        console.log('sortArraysortArray', sortArray)
+
+    }
+
     sortByHighestPont() {
         // const sorted = this.figure.allCircles.toSorted((a, b) => {
         //     if (a.center.yCoord <= b.center.yCoord) {
@@ -65,7 +111,7 @@ export class Triangulation {
             }
         })
 
-        // this.vertexes = sorted.map(s => new Vertex(s.center.xCoord, s.center.yCoord, { shape: 'trinalge' }))
+        // this.figure.allCircles.forEach(s =>  s.Options = {shape: 't'})
     }
 
 

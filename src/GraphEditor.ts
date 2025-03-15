@@ -47,7 +47,7 @@ export class GraphEditor {
 
     triangulate() {
         this.triangulation = new Triangulation(this.figure)
-        this.triangulation.sortByHighestPont()
+        this.triangulation.sortByClockWise()
     }
 
     private handleMouseDown = (event: MouseEvent) => {

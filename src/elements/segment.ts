@@ -1,22 +1,27 @@
 import { Circle } from "./cirlce";
+import { Vertex } from "./Vertext";
 import { Point } from "./point";
 
 type Options = { width?: number, color?: string, dash?: [number, number] | [] }
 export class Segment {
 
-    nearestToOrigin: Circle | null
-    furthestToOrigin: Circle | null
+    nearestToOrigin: Vertex | null
+    furthestToOrigin: Vertex | null
     options: Options | null
 
-    constructor(private p1: Circle, private p2: Circle) {
+    constructor(private p1: Vertex, private p2: Vertex) {
         this.setPoints()
+    }
+
+    get AllPoints() {
+        return [this.p1, this.p2]
     }
 
     equals(seg: Segment) {
         return this.includesPoint(seg.p1) && this.includesPoint(seg.p2)
     }
 
-    includesPoint(point: Circle) {
+    includesPoint(point: Vertex) {
         return this.p1.isEqual(point) || this.p2.isEqual(point)
     }
 
@@ -24,7 +29,7 @@ export class Segment {
         return segment.p1.isEqual(this.p1) || segment.p2.isEqual(this.p2) || segment.p2.isEqual(this.p1) || segment.p1.isEqual(this.p2)
     }
 
-    isPointOnSegment(point: Circle) {
+    isPointOnSegment(point: Vertex) {
         const { xCoord: x, yCoord: y } = point.center
         // line equasion https://en.wikipedia.org/wiki/Linear_equation
         const res = (this.p2.center.yCoord - this.p1.center.yCoord) * (x - this.p1.center.xCoord) - (y - this.p1.center.yCoord) * (this.p2.center.xCoord - this.p1.center.xCoord)
@@ -39,7 +44,7 @@ export class Segment {
         this.furthestToOrigin = Math.hypot(x1, y1) > Math.hypot(x2, y2) ? this.p1 : this.p2
     }
 
-    isPointNearSegment(point: Circle) {
+    isPointNearSegment(point: Vertex) {
 
         const { xCoord: x, yCoord: y } = point.center
         const { center: { xCoord: x1, yCoord: y1 } } = this.nearestToOrigin
@@ -69,7 +74,7 @@ export class Segment {
         this.options = { ...this.options, color }
     }
 
-    checkOrientation(circle: Circle) {
+    checkOrientation(circle: Vertex) {
         orientation(this.p1.center, this.p2.center, circle.center)
     }
 
