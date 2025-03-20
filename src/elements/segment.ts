@@ -8,6 +8,7 @@ export class Segment {
     nearestToOrigin: Vertex | null
     furthestToOrigin: Vertex | null
     options: Options | null
+    originalOptions: Options | null
 
     constructor(private p1: Vertex, private p2: Vertex) {
         this.setPoints()
@@ -24,6 +25,18 @@ export class Segment {
     includesPoint(point: Vertex) {
         return this.p1.isEqual(point) || this.p2.isEqual(point)
     }
+
+    set Options(options: Options) {
+        Object.entries(options).forEach(([key, value]) => {
+            if (value) {
+                this.options = {
+                    ...this.options,
+                    [key]: value
+                }
+            }
+        })
+    }
+
 
     hasSameEndPoint(segment: Segment) {
         return segment.p1.isEqual(this.p1) || segment.p2.isEqual(this.p2) || segment.p2.isEqual(this.p1) || segment.p1.isEqual(this.p2)
@@ -74,6 +87,10 @@ export class Segment {
         this.options = { ...this.options, color }
     }
 
+    resetColor() {
+        this.options = { ...this.options, color: this.originalOptions.color }
+    }
+
     checkOrientation(circle: Vertex) {
         orientation(this.p1.center, this.p2.center, circle.center)
     }
@@ -105,6 +122,7 @@ export class Segment {
             this.options = {
                 width, color, dash
             }
+            this.originalOptions = structuredClone(this.options)
         }
 
         this.setPoints()

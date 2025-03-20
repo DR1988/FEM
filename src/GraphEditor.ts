@@ -10,7 +10,8 @@ import { Vertex } from "./elements/Vertext";
 export class GraphEditor {
     ctx: CanvasRenderingContext2D
     selected: Circle | null
-    hovered: Circle | null
+    hovered: Vertex | null
+    lastHovered: Vertex | null
     hoveredSegment: Segment | null
     foundIntersectSegment: Map<Segment, boolean>
     mouse: Circle | null
@@ -24,6 +25,7 @@ export class GraphEditor {
         this.ctx = canvas.getContext('2d')
         this.selected = null
         this.hovered = null
+        this.lastHovered = null
         this.dragging = false
         this.draggable = false
         this.foundIntersectSegment = new Map()
@@ -83,7 +85,6 @@ export class GraphEditor {
                 this.figure.addPoint(this.mouse)
                 this.selectPoint(this.mouse)
                 this.hovered = this.mouse
-
             }
             // }
 
@@ -105,6 +106,12 @@ export class GraphEditor {
         this.mouse = new Vertex(event.offsetX, event.offsetY)
 
         this.hovered = this.figure.allCircles.find(c => this.isNearDot(c, this.mouse))
+        if (this.hovered) {
+            this.lastHovered = this.hovered
+            this.lastHovered.Hovered = true
+        } else if (this.lastHovered) {
+            this.lastHovered.Hovered = false
+        }
         if (this.draggable && this.selected) {
             this.dragging = true
             const point = this.mouse.center

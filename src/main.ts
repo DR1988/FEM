@@ -60,7 +60,7 @@ const p2 = new Vertex(254, 175, { color: 'green' })
 const p3 = new Vertex(321, 108, { color: 'blue' })
 const p4 = new Vertex(340, 277, { color: 'yellow' })
 const p5 = new Vertex(405, 297, { color: 'brown' })
-const p6 = new Vertex(389, 395, { color: 'lime'})
+const p6 = new Vertex(389, 395, { color: 'lime' })
 const p7 = new Vertex(286, 364, { color: 'aqua' })
 const p8 = new Vertex(304, 481, { color: 'chocolate' })
 const p9 = new Vertex(231, 446, { color: 'crimson' })
@@ -90,7 +90,7 @@ const s15 = new Segment(p15, p1)
 
 const figure = new Figure(
     [p1, p2, p3, p4, p5, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15],
-    [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15]
+    [s2, s7, s3, s12, s4, s10, s5, s14, s1, s8, s9, s6, s11, s15, s13]
 )
 // const figure = new Figure([p1, p2,p3,p4], [s1])
 

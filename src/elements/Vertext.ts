@@ -11,6 +11,8 @@ type ConstructOptions = {
     shape?: VertexShape
 }
 
+const HOVERED_COLOR = 'red'
+
 export class Vertex extends Circle {
     center: Point
     options: {
@@ -18,6 +20,7 @@ export class Vertex extends Circle {
         size: number
         color: string
     }
+    hovered: boolean = false
     type: VertexType
 
     constructor(x: number, y: number, { shape = 'circle', color = 'black', size = DEFAULT_RADIUS }: ConstructOptions = {}) {
@@ -42,6 +45,30 @@ export class Vertex extends Circle {
         })
     }
 
+    set Hovered(hoverd: boolean) {
+        this.hovered = hoverd
+    }
+
+    private drawData(ctx: CanvasRenderingContext2D) {
+        const fontHeight = 18
+        const xCoord = this.center.xCoord + 1.5 * this.options.size / 2
+        const yCoord = this.center.yCoord + 1.5 * this.options.size / 2
+        const textX = `x: ${this.center.xCoord}`
+        const textY = `y: ${this.center.yCoord}`
+
+        const textXwidth = ctx.measureText(textX).width
+        const textYwidth = ctx.measureText(textY).width
+
+        const width = textXwidth > textYwidth ? textXwidth : textYwidth
+        ctx.font = `${fontHeight}px serif`;
+
+        ctx.fillStyle = 'black'
+        ctx.fillRect(xCoord, yCoord, width + 20, 2 * fontHeight + 20)
+        ctx.fillStyle = 'white'
+        ctx.fillText(textX, xCoord + 10, yCoord + 20);
+        ctx.fillText(textY, xCoord + 10, yCoord + 38);
+    }
+
     draw(ctx: CanvasRenderingContext2D) {
         switch (this.options.shape) {
             case "trinalge":
@@ -49,19 +76,24 @@ export class Vertex extends Circle {
                 ctx.moveTo(this.center.xCoord, this.center.yCoord - this.options.size);
                 ctx.lineTo(this.center.xCoord - this.options.size, this.center.yCoord + this.options.size);
                 ctx.lineTo(this.center.xCoord + this.options.size, this.center.yCoord + this.options.size);
-                ctx.fillStyle = this.options.color
+                ctx.fillStyle = this.hovered ? HOVERED_COLOR : this.options.color
+                this.hovered && this.drawData(ctx)
                 ctx.fill();
                 break;
             case "circle":
                 ctx.beginPath()
                 ctx.arc(this.center.xCoord, this.center.yCoord, this.options.size, 0, 360)
-                ctx.fillStyle = this.options.color
+                ctx.fillStyle = this.hovered ? HOVERED_COLOR : this.options.color
                 ctx.fill();
+                this.hovered && this.drawData(ctx)
+
                 break;
             case "square":
                 ctx.beginPath()
-                ctx.fillStyle = this.options.color
+                ctx.fillStyle = this.hovered ? HOVERED_COLOR : this.options.color
                 ctx.fillRect(this.center.xCoord - 1.5 * this.options.size / 2, this.center.yCoord - 1.5 * this.options.size / 2, 1.5 * this.options.size, 1.5 * this.options.size)
+                this.hovered && this.drawData(ctx)
+
                 break;
         }
     }
