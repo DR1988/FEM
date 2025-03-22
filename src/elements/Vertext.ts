@@ -20,6 +20,11 @@ export class Vertex extends Circle {
         size: number
         color: string
     }
+    originalOptions: {
+        shape: VertexShape
+        size: number
+        color: string
+    }
     hovered: boolean = false
     type: VertexType
 
@@ -27,6 +32,13 @@ export class Vertex extends Circle {
         super(x, y)
         this.center = new Point(x, y)
         this.options = {
+            ...this.options,
+            shape,
+            size,
+            color,
+        }
+
+        this.originalOptions = {
             ...this.options,
             shape,
             size,
@@ -43,6 +55,12 @@ export class Vertex extends Circle {
                 }
             }
         })
+    }
+
+    setOriginanlOptions() {
+        this.options = {
+            ...this.originalOptions
+        }
     }
 
     set Hovered(hoverd: boolean) {

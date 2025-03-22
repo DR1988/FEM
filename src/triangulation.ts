@@ -13,34 +13,32 @@ export class Triangulation {
     vertexes: Vertex[]
 
     constructor(public figure: Figure) {
-        this.sortBySegments()
+        this.sortSegmentsInRow()
     }
 
     get Vertexes() {
         return this.vertexes
     }
 
-    async sortBySegments() {
+    async sortSegmentsInRow() {
         // console.log('this.figure.allSegments,', this.figure.allSegments.map(s => s.AllPoints.map(p => p.center)))
         const segmentsSet = new Set<Segment>()
 
         let nextVertext = this.getHighestVertext()
 
-        for (const item of this.figure.allSegments) {
-            item.setSegmentColor('red')
-            item.Options = { width: 4 }
-            await timer(300)
-            item.setSegmentColor('lime')
-        }
+        // show hot segments was added initialy
+        // for (const item of this.figure.allSegments) {
+        //     item.setSegmentColor('red')
+        //     item.Options = { width: 4 }
+        //     await timer(300)
+        //     item.setSegmentColor('lime')
+        // }
+
         while (segmentsSet.size !== this.figure.allSegments.length) {
             const seg = this.figure.allSegments.find(s => s.includesPoint(nextVertext) && !segmentsSet.has(s))
             if (!segmentsSet.has(seg)) {
                 segmentsSet.add(seg)
-                seg.Options = { width: 4, color: 'red' }
-                console.log(seg);
-                await timer(300)
-                seg.Options = { width: 2, color: 'black' }
-
+                // await this.colorSegment([seg])
                 nextVertext = seg.AllPoints[0].isEqual(nextVertext) ? seg.AllPoints[1] : seg.AllPoints[0]
             }
         }
@@ -48,7 +46,60 @@ export class Triangulation {
         console.log('END', segments);
 
         // console.log('segments', segments);
+        this.getVertexesFromSegemnts(segments)
+        return segments
+    }
 
+    async getVertexesFromSegemnts(segments: Segment[]) {
+        const vertexSet = new Set<Vertex>()
+        let firstSegment: Segment = segments.pop()
+        let lastSegment: Segment = firstSegment
+        let process = true
+        while (process) {
+            let seg1 = segments.pop()
+            if (!seg1) {
+                console.log('NO SEG');
+
+                seg1 = firstSegment
+                process = false
+            }
+
+            // let seg2 = segments.pop()
+            // if (!seg2) {
+            //     seg2 = firstSegment
+            // }
+
+            const vertexes = this.getVertexesFromSegments(seg1, lastSegment)
+            const { xCoord: x1, yCoord: y1 } = vertexes[0].center
+            const { xCoord: x2, yCoord: y2 } = vertexes[1].center
+            const { xCoord: x3, yCoord: y3 } = vertexes[2].center
+
+            const result = this.counterClockwise(x1, y1, x2, y2, x3, y3)
+            // const result2 = this.clockwise(x1, y1, x2, y2, x3, y3)
+            console.log('result', result)
+            const area = this.triangleArea(x1, y1, x2, y2, x3, y3)
+            this.colorVertexes(vertexes, 1500)
+            await this.colorSegment([seg1, lastSegment], 1500)
+            lastSegment = seg1
+        }
+    }
+
+    async colorSegment(segs: Segment[], time?: number) {
+        segs.forEach(s => {
+            s.Options = { width: 4, color: 'red' }
+        });
+
+        // // console.log(seg);
+        time && await timer(time)
+        segs.forEach(s => {
+            s.Options = { width: 2, color: 'black' }
+        });
+    }
+
+    async colorVertexes(vertexes: Vertex[], time?: number) {
+        vertexes.forEach(v => v.Options = { color: 'red', shape: 'square' })
+        time && await timer(time)
+        vertexes.forEach(v => v.setOriginanlOptions())
     }
 
     private getHighestVertext() {
@@ -62,6 +113,27 @@ export class Triangulation {
         })
 
         return currentVertex
+    }
+
+    private triangleArea2(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number) {
+        return (x2 - x1) * (y3 - y1) - (y2 - y1) * (x3 - x1);
+    }
+
+    private triangleArea(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number) {
+        return Math.abs(this.triangleArea2(x1, y1, x2, y2, x3, y3)) / 2;
+    }
+
+    private clockwise(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number) {
+        return this.triangleArea2(x1, y1, x2, y2, x3, y3) < 0;
+    }
+
+    private counterClockwise(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number) {
+        return this.triangleArea2(x1, y1, x2, y2, x3, y3) > 0;
+    }
+
+    private getVertexesFromSegments(seg1: Segment, seg2: Segment): [Vertex, Vertex, Vertex] {
+        const vertex2 = seg1.includesPoint(seg2.AllPoints[0]) ? seg2.AllPoints[1] : seg2.AllPoints[0]
+        return [seg1.AllPoints[0], seg1.AllPoints[1], vertex2]
     }
 
     sortByClockWise() {
