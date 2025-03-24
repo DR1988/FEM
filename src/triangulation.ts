@@ -53,14 +53,15 @@ export class Triangulation {
     async getVertexesFromSegemnts(segments: Segment[]) {
         const vertexSet = new Set<Vertex>()
         let firstSegment: Segment = segments.pop()
-        let lastSegment: Segment = firstSegment
+        let seg1: Segment = firstSegment
         let process = true
+        let put = true
         while (process) {
-            let seg1 = segments.pop()
-            if (!seg1) {
+            let lastSegment = segments.pop()
+            if (!lastSegment) {
                 console.log('NO SEG');
 
-                seg1 = firstSegment
+                lastSegment = firstSegment
                 process = false
             }
 
@@ -71,13 +72,14 @@ export class Triangulation {
 
             const vertexes = this.getVertexesFromSegments(seg1, lastSegment)
 
-            const commonVertex = this.getCommonVertexFromSegments(seg1, lastSegment)
-
-
-            if (commonVertex) {
-                this.isBelongToFigure(commonVertex)
-            }
             console.log('vertexes', vertexes);
+            if (put) {
+                put = false
+                const angle = this.getCos(vertexes)
+
+                console.log('angle', angle * 180 / Math.PI)
+            }
+
             const { xCoord: x1, yCoord: y1 } = vertexes[0].center
             const { xCoord: x2, yCoord: y2 } = vertexes[1].center
             const { xCoord: x3, yCoord: y3 } = vertexes[2].center
@@ -85,13 +87,31 @@ export class Triangulation {
             // const area = this.triangleArea(x1, y1, x2, y2, x3, y3)
             this.colorVertexes(vertexes, 1500)
             await this.colorSegment([seg1, lastSegment], 1500)
-            lastSegment = seg1
 
+            seg1 = lastSegment
         }
     }
 
-    isBelongToFigure(vertex: Vertex) {
+    getCos(vertexes: [Vertex, Vertex, Vertex]) {
+        const { center: { xCoord: x0, yCoord: y0 } } = vertexes[0]
+        const { center: { xCoord: x1, yCoord: y1 } } = vertexes[1]
+        const { center: { xCoord: x2, yCoord: y2 } } = vertexes[2]
 
+        const a = Math.hypot(x0 - x1, y0 - y1)
+        const b = Math.hypot(x1 - x2, y1 - y2)
+        const c = Math.hypot(x0 - x2, y0 - y2)
+
+        const result = (a * a + b * b - c * c) / (2 * a * b)
+        console.log('result', a, a / Math.cos(Math.acos(result) / 2));
+        const xn = x2 + c / Math.cos(Math.acos(result) / 2)
+        const yn = y2 + c / Math.sin(Math.acos(result) / 2)
+        console.log('x', a, xn);
+        console.log('y', a, yn);
+        const v = new Vertex(xn, yn)
+        const s = new Segment(vertexes[1], v)
+        this.figure.addPoint(v)
+        this.figure.addSegment(s)
+        return Math.acos(result)
     }
 
     async colorSegment(segs: Segment[], time?: number) {

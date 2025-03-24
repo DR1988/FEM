@@ -57,9 +57,9 @@ const triangulateBtn = document.getElementById('triangulate') as (HTMLButtonElem
 
 const p1 = new Vertex(206, 128, { color: 'red' })
 const p2 = new Vertex(254, 175, { color: 'green' })
-const p3 = new Vertex(321, 108, { color: 'blue' })
+const p3 = new Vertex(340, 108, { color: 'blue' })
 const p4 = new Vertex(340, 277, { color: 'yellow' })
-const p5 = new Vertex(405, 297, { color: 'brown' })
+const p5 = new Vertex(405, 277, { color: 'brown' })
 const p6 = new Vertex(389, 395, { color: 'lime' })
 const p7 = new Vertex(286, 364, { color: 'aqua' })
 const p8 = new Vertex(304, 481, { color: 'chocolate' })
