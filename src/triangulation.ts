@@ -70,23 +70,33 @@ export class Triangulation {
             // }
 
             const vertexes = this.getVertexesFromSegments(seg1, lastSegment)
+
+            const commonVertex = this.getCommonVertexFromSegments(seg1, lastSegment)
+
+
+            if (commonVertex) {
+                this.isBelongToFigure(commonVertex)
+            }
+            console.log('vertexes', vertexes);
             const { xCoord: x1, yCoord: y1 } = vertexes[0].center
             const { xCoord: x2, yCoord: y2 } = vertexes[1].center
             const { xCoord: x3, yCoord: y3 } = vertexes[2].center
 
-            const result = this.counterClockwise(x1, y1, x2, y2, x3, y3)
-            // const result2 = this.clockwise(x1, y1, x2, y2, x3, y3)
-            console.log('result', result)
-            const area = this.triangleArea(x1, y1, x2, y2, x3, y3)
+            // const area = this.triangleArea(x1, y1, x2, y2, x3, y3)
             this.colorVertexes(vertexes, 1500)
             await this.colorSegment([seg1, lastSegment], 1500)
             lastSegment = seg1
+
         }
     }
 
+    isBelongToFigure(vertex: Vertex) {
+
+    }
+
     async colorSegment(segs: Segment[], time?: number) {
-        segs.forEach(s => {
-            s.Options = { width: 4, color: 'red' }
+        segs.forEach((s, ind) => {
+            s.Options = { width: 4, color: ind === 0 ? 'red' : 'green' }
         });
 
         // // console.log(seg);
@@ -96,8 +106,8 @@ export class Triangulation {
         });
     }
 
-    async colorVertexes(vertexes: Vertex[], time?: number) {
-        vertexes.forEach(v => v.Options = { color: 'red', shape: 'square' })
+    private async colorVertexes(vertexes: Vertex[], time?: number) {
+        vertexes.forEach((v, i) => v.Options = { shape: 'square' })
         time && await timer(time)
         vertexes.forEach(v => v.setOriginanlOptions())
     }
@@ -136,6 +146,21 @@ export class Triangulation {
         return [seg1.AllPoints[0], seg1.AllPoints[1], vertex2]
     }
 
+    private getCommonVertexFromSegments(seg1: Segment, seg2: Segment): Vertex | null {
+        const testVert1 = seg1.includesPoint(seg2.AllPoints[0])
+        const testVert2 = seg1.includesPoint(seg2.AllPoints[1])
+
+        if (testVert1) {
+            return seg2.AllPoints[0]
+        }
+
+        if (testVert2) {
+            return seg2.AllPoints[1]
+        }
+
+        return null
+    }
+
     sortByClockWise() {
         const sortArray: Vertex[] = []
         let currentVertex: Vertex | null = this.getHighestVertext()
@@ -172,9 +197,6 @@ export class Triangulation {
                 } else if ((acc.center.xCoord > current.center.xCoord && acc.center.yCoord >= current.center.yCoord) ||
                     (acc.center.xCoord < current.center.xCoord && acc.center.yCoord < current.center.yCoord)
                 ) {
-                    if (currentVertex.options.color === 'lime') {
-                        console.log(';sdcsdc');
-                    }
                     return current
                 }
 

@@ -73,18 +73,21 @@ export class Vertex extends Circle {
         const yCoord = this.center.yCoord + 1.5 * this.options.size / 2
         const textX = `x: ${this.center.xCoord}`
         const textY = `y: ${this.center.yCoord}`
+        const textLength = `L: ${Math.hypot(xCoord, yCoord).toFixed(2)}`
 
         const textXwidth = ctx.measureText(textX).width
         const textYwidth = ctx.measureText(textY).width
+        const textLengthWidth = ctx.measureText(textLength).width
 
         const width = textXwidth > textYwidth ? textXwidth : textYwidth
         ctx.font = `${fontHeight}px serif`;
 
         ctx.fillStyle = 'black'
-        ctx.fillRect(xCoord, yCoord, width + 20, 2 * fontHeight + 20)
+        ctx.fillRect(xCoord, yCoord, textLengthWidth + 20, 3 * fontHeight + 20)
         ctx.fillStyle = 'white'
         ctx.fillText(textX, xCoord + 10, yCoord + 20);
         ctx.fillText(textY, xCoord + 10, yCoord + 38);
+        ctx.fillText(textLength, xCoord + 10, yCoord + 58);
     }
 
     draw(ctx: CanvasRenderingContext2D) {
