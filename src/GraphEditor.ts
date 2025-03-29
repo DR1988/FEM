@@ -19,6 +19,8 @@ export class GraphEditor {
     draggable: boolean
     steps: []
     triangulation: Triangulation | null
+    helperFigure: Figure
+    lastHoveredhelper: Vertex | null
 
     constructor(private canvas: HTMLCanvasElement, private figure: Figure) {
 
@@ -48,8 +50,10 @@ export class GraphEditor {
     }
 
     triangulate() {
-        this.triangulation = new Triangulation(this.figure)
+        this.helperFigure = new Figure([], [])
+        this.triangulation = new Triangulation(this.figure, this.helperFigure)
         this.triangulation.sortByClockWise()
+        return this.triangulation
     }
 
     private handleMouseDown = (event: MouseEvent) => {
@@ -106,6 +110,14 @@ export class GraphEditor {
         this.mouse = new Vertex(event.offsetX, event.offsetY)
 
         this.hovered = this.figure.allCircles.find(c => this.isNearDot(c, this.mouse))
+        const hoveredHelper = this.helperFigure?.allCircles?.find(c => this.isNearDot(c, this.mouse))
+        if (hoveredHelper) {
+            this.lastHoveredhelper = hoveredHelper
+            this.lastHoveredhelper.Hovered = true
+        } else if (this.lastHoveredhelper) {
+            this.lastHoveredhelper.Hovered = false
+        }
+
         if (this.hovered) {
             this.lastHovered = this.hovered
             this.lastHovered.Hovered = true
@@ -137,11 +149,18 @@ export class GraphEditor {
         })
 
         if (hoveredSegment && !this.hovered /*don't want to show in same time colored dot and segment */) {
-            this.hoveredSegment?.setSegmentColor('black') // cause could be 'hovered' (e.g. colored in 'hovered' color) two elements in same time 
+            if (this.hoveredSegment) {
+                this.hoveredSegment.setSegmentColor('black') // cause could be 'hovered' (e.g. colored in 'hovered' color) two elements in same time 
+                this.hoveredSegment.Hovered = false
+            }
             this.hoveredSegment = hoveredSegment
             this.hoveredSegment.setSegmentColor('lime')
+            this.hoveredSegment.Hovered = true
         } else {
-            this.hoveredSegment?.setSegmentColor('black')
+            if (this.hoveredSegment) {
+                this.hoveredSegment?.setSegmentColor('black') // cause could be 'hovered' (e.g. colored in 'hovered' color) two elements in same time 
+                this.hoveredSegment.Hovered = false
+            }
             this.hoveredSegment = null
         }
 

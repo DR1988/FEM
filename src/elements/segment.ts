@@ -7,8 +7,9 @@ export class Segment {
 
     nearestToOrigin: Vertex | null
     furthestToOrigin: Vertex | null
-    options: Options | null
+    options: Options = { width: 2, color: 'black', dash: [] }
     originalOptions: Options | null
+    hovered: boolean = false
 
     constructor(private p1: Vertex, private p2: Vertex) {
         this.setPoints()
@@ -26,6 +27,10 @@ export class Segment {
         return this.p1.isEqual(point) || this.p2.isEqual(point)
     }
 
+    set Hovered(hovered: boolean) {
+        this.hovered = hovered
+    }
+
     set Options(options: Options) {
         Object.entries(options).forEach(([key, value]) => {
             if (value) {
@@ -40,6 +45,18 @@ export class Segment {
 
     hasSameEndPoint(segment: Segment) {
         return segment.p1.isEqual(this.p1) || segment.p2.isEqual(this.p2) || segment.p2.isEqual(this.p1) || segment.p1.isEqual(this.p2)
+    }
+
+    getCommonVertex(segment: Segment): Vertex | null {
+        if (segment.p1.isEqual(this.p1) || segment.p2.isEqual(this.p1)) {
+            return this.p1
+        }
+
+        if (segment.p2.isEqual(this.p2) || segment.p1.isEqual(this.p2)) {
+            return this.p2
+        }
+
+        return null
     }
 
     isPointOnSegment(point: Vertex) {
@@ -95,6 +112,7 @@ export class Segment {
         orientation(this.p1.center, this.p2.center, circle.center)
     }
 
+    // easy one https://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/
     doIntersect(segment: Segment) {
         const { p1, p2 } = this
         const { p1: q1, p2: q2 } = segment
@@ -116,6 +134,38 @@ export class Segment {
 
     }
 
+    get CentralPoint() {
+        const { xCoord: x1, yCoord: y1 } = this.p1.center
+        const { xCoord: x2, yCoord: y2 } = this.p2.center
+
+        const xCoord = (x1 + x2) / 2
+        const yCoord = (y1 + y2) / 2
+        return { xCoord, yCoord }
+    }
+
+    get Length() {
+        const { xCoord: x1, yCoord: y1 } = this.p1.center
+        const { xCoord: x2, yCoord: y2 } = this.p2.center
+
+        return Math.hypot(x1 - x2, y1 - y2)
+    }
+
+    drawInfo(ctx: CanvasRenderingContext2D) {
+        if (!this.hovered) {
+            return
+        }
+        const { xCoord, yCoord } = this.CentralPoint
+        ctx.fillStyle = 'black'
+        ctx.fillRect(xCoord, yCoord, 140, 50)
+        ctx.fillStyle = 'white'
+        ctx.font = `${16}px serif`;
+        const length = `Legnth: ${this.Length.toFixed(2)}`
+        ctx.fillText(length, xCoord + 10, yCoord + 20);
+        // ctx.fillText(textX, xCoord + 10, yCoord + 20);
+        // ctx.fillText(textY, xCoord + 10, yCoord + 38);
+        // ctx.fillText(textLength, xCoord + 10, yCoord + 58);
+    }
+
 
     draw(ctx: CanvasRenderingContext2D, { width = 2, color = 'black', dash = [] }: Options = {}) {
         if (!this.options) {
@@ -130,12 +180,19 @@ export class Segment {
         ctx.beginPath()
         ctx.lineWidth = this.options.width
         ctx.strokeStyle = this.options.color
-        ctx.setLineDash(this.options.dash)
+        try {
+            ctx.setLineDash(this.options.dash)
+        } catch (e) {
+            console.log('eeee', e);
+            console.log('this.options.dash', this.options.dash);
+
+        }
         ctx.moveTo(this.p1.center.xCoord, this.p1.center.yCoord);
         ctx.lineTo(this.p2.center.xCoord, this.p2.center.yCoord);
         ctx.stroke();
         ctx.setLineDash([])
 
+        this.drawInfo(ctx)
     }
 
 }

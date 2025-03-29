@@ -1,3 +1,4 @@
+import { Point } from "./elements/point";
 import { Segment } from "./elements/segment";
 import { Vertex } from "./elements/Vertext";
 import { Figure } from "./figure";
@@ -11,8 +12,16 @@ const timer = async (time: number = 1000) => {
 }
 export class Triangulation {
     vertexes: Vertex[]
+    arc: { center: Point, arc: number }
+    maxLength = 10
+    sortedSegments: Segment[] = []
+    centralVert: Vertex
+    centralSegment: Segment
+    connectionSegment: Segment
 
-    constructor(public figure: Figure) {
+    boundarySegment: Segment
+    constructor(public figure: Figure, public helperFigure: Figure) {
+
         this.sortSegmentsInRow()
     }
 
@@ -26,7 +35,7 @@ export class Triangulation {
 
         let nextVertext = this.getHighestVertext()
 
-        // show hot segments was added initialy
+        // show how segments was added initialy
         // for (const item of this.figure.allSegments) {
         //     item.setSegmentColor('red')
         //     item.Options = { width: 4 }
@@ -38,24 +47,51 @@ export class Triangulation {
             const seg = this.figure.allSegments.find(s => s.includesPoint(nextVertext) && !segmentsSet.has(s))
             if (!segmentsSet.has(seg)) {
                 segmentsSet.add(seg)
-                // await this.colorSegment([seg])
+                // await this.colorSegment([seg], 500)
                 nextVertext = seg.AllPoints[0].isEqual(nextVertext) ? seg.AllPoints[1] : seg.AllPoints[0]
             }
         }
         const segments: Segment[] = [...segmentsSet]
+        this.sortedSegments = [...segmentsSet]
         console.log('END', segments);
 
         // console.log('segments', segments);
-        this.getVertexesFromSegemnts(segments)
+        // this.getVertexesFromSegemnts(segments)
         return segments
     }
 
+    * calcVertextType() {
+        let firstSegment: Segment = this.sortedSegments.pop()
+        let seg1: Segment = firstSegment
+        // console.log('this.sortedSegments length', this.sortedSegments.length);
+        let count = 1
+        this.sortedSegments.push(firstSegment)
+        let coloredVertexes: [Vertex, Vertex, Vertex] = [] as unknown as [Vertex, Vertex, Vertex]
+        let coloredSegments: Segment[] = []
+
+        for (const segment of this.sortedSegments) {
+            console.log(count++);
+            this.setDefaultVertex(coloredVertexes)
+            this.setDefaultSegments(coloredSegments)
+
+            coloredVertexes = this.getVertexesFromSegments(seg1, segment)
+            // this.getCos(vertexes)
+            // console.log('vertexes', coloredVertexes);
+            coloredSegments = [seg1, segment]
+            this.colorVertexesYield(coloredVertexes)
+            this.colorSegmentYield(coloredSegments)
+            this.getCos(coloredVertexes)
+            yield segment
+            seg1 = segment
+        }
+
+    }
+
     async getVertexesFromSegemnts(segments: Segment[]) {
-        const vertexSet = new Set<Vertex>()
         let firstSegment: Segment = segments.pop()
         let seg1: Segment = firstSegment
         let process = true
-        let put = true
+        let count = 0
         while (process) {
             let lastSegment = segments.pop()
             if (!lastSegment) {
@@ -65,54 +101,205 @@ export class Triangulation {
                 process = false
             }
 
-            // let seg2 = segments.pop()
-            // if (!seg2) {
-            //     seg2 = firstSegment
-            // }
-
             const vertexes = this.getVertexesFromSegments(seg1, lastSegment)
 
-            console.log('vertexes', vertexes);
-            if (put) {
-                put = false
+            if (count < 5) {
+                count++
                 const angle = this.getCos(vertexes)
-
-                console.log('angle', angle * 180 / Math.PI)
             }
 
-            const { xCoord: x1, yCoord: y1 } = vertexes[0].center
-            const { xCoord: x2, yCoord: y2 } = vertexes[1].center
-            const { xCoord: x3, yCoord: y3 } = vertexes[2].center
-
-            // const area = this.triangleArea(x1, y1, x2, y2, x3, y3)
-            this.colorVertexes(vertexes, 1500)
-            await this.colorSegment([seg1, lastSegment], 1500)
+            this.colorVertexes(vertexes, 500)
+            await this.colorSegment([seg1, lastSegment], 500)
 
             seg1 = lastSegment
         }
     }
 
-    getCos(vertexes: [Vertex, Vertex, Vertex]) {
+    async getCos(vertexes: [Vertex, Vertex, Vertex]) {
         const { center: { xCoord: x0, yCoord: y0 } } = vertexes[0]
         const { center: { xCoord: x1, yCoord: y1 } } = vertexes[1]
         const { center: { xCoord: x2, yCoord: y2 } } = vertexes[2]
+
+        // const addXCoord = x1 + 50
+        // const vertAdd = new Vertex(addXCoord, y1, { color: 'red', shape: 'square' })
+        // const addSegm1 = new Segment(vertAdd, vertexes[0])
+        // const addSegm2 = new Segment(vertAdd, vertexes[2])
+        // this.helperFigure.addPoint(vertAdd)
+        // this.figure.addSegment(addSegm1)
+        // this.figure.addSegment(addSegm2)
+
+        // const ox = Math.hypot(x1 - (x1 + 50), 0) // additionl x-axis line or segment to calculate relative angle
+        // const firstDiag = Math.hypot(x0 - addXCoord, y1 - y0)
+
+        // const secondDiag = Math.hypot(x2 - addXCoord, y2 - y1)
+
+
+        if (this.centralVert) {
+            this.helperFigure.removePoint(this.centralVert)
+        }
+        if (this.centralSegment) {
+            this.helperFigure.removeSegment(this.centralSegment)
+        }
+        if (this.connectionSegment) {
+            this.helperFigure.removeSegment(this.connectionSegment)
+        }
+
+        if (this.boundarySegment) {
+            this.sortedSegments.forEach(s => {
+                if (s.doIntersect(this.boundarySegment)) {
+                    s.setSegmentColor('black')
+                }
+            })
+        }
+
+        this.connectionSegment = new Segment(vertexes[2], vertexes[0])
+        this.centralVert = new Vertex(this.connectionSegment.CentralPoint.xCoord, this.connectionSegment.CentralPoint.yCoord)
+        this.helperFigure.addSegment(this.connectionSegment)
+        this.centralSegment = new Segment(this.centralVert, vertexes[1])
+        this.helperFigure.addSegment(this.centralSegment)
+        this.helperFigure.addPoint(this.centralVert)
+
+        let boundaryVertex = new Vertex(0, this.centralVert.center.yCoord)
+        this.boundarySegment = new Segment(boundaryVertex, this.centralVert)
+        this.helperFigure.addSegment(this.boundarySegment)
+
+
+        const intersectArray: { vertex: Vertex, segments: [Segment, Segment] }[] = []
+
+        let crossCount = 0
+        let prevSegment: Segment
+        this.sortedSegments.forEach(s => {
+            if (s.doIntersect(this.boundarySegment)) {
+                if (prevSegment) {
+                    // s.setSegmentColor('black')
+                    const commontVertex = prevSegment.getCommonVertex(s)
+                    if (commontVertex) {
+                        const p = new Point(commontVertex.center.xCoord, commontVertex.center.yCoord - 11)
+                        console.log('COMMON', commontVertex);
+                        commontVertex.setCenter = p
+                        // intersectArray.push({ vertex: commontVertex, segments: [prevSegment, s] })
+                        prevSegment = s
+                        return
+                    } else {
+                        prevSegment = s
+                    }
+                } else {
+                    prevSegment = s
+                    s.setSegmentColor('lime')
+                    console.log('INCR');
+
+                    crossCount++
+                }
+            }
+        })
+
+        console.log('crossCount', crossCount);
+
 
         const a = Math.hypot(x0 - x1, y0 - y1)
         const b = Math.hypot(x1 - x2, y1 - y2)
         const c = Math.hypot(x0 - x2, y0 - y2)
 
-        const result = (a * a + b * b - c * c) / (2 * a * b)
-        console.log('result', a, a / Math.cos(Math.acos(result) / 2));
-        const xn = x2 + c / Math.cos(Math.acos(result) / 2)
-        const yn = y2 + c / Math.sin(Math.acos(result) / 2)
-        console.log('x', a, xn);
-        console.log('y', a, yn);
-        const v = new Vertex(xn, yn)
-        const s = new Segment(vertexes[1], v)
-        this.figure.addPoint(v)
-        this.figure.addSegment(s)
-        return Math.acos(result)
+        // const arccosArgFirst = this.getArccos(ox, a, firstDiag)
+
+        // const arccosArgSecond = this.getArccos(ox, b, secondDiag)
+        // return (a * a + b * b - c * c) / (2 * a * b)
+        // console.log('cosinus', arccosArgFirst, Math.acos(arccosArgFirst) * 180 / Math.PI);
+        // console.log('cosinus', arccosArgSecond, Math.acos(arccosArgSecond) * 180 / Math.PI);
+
+        // console.log(x0, y0);
+        // console.log(x1, y1);
+        // console.log(x2, y2);
+
+        // quite simple math https://en.wikipedia.org/wiki/Law_of_cosines
+        const arccosArg = this.getArccos(a, b, c) // just arccos argument to calculate angle
+
+        // console.log('result', a, Math.acos(arccosArg) * 180 / Math.PI);
+        // console.log('Math.cos(Math.acos(result) / 2', Math.acos(arccosArg) / 2 * 180 / Math.PI);
+        const angle = 90
+        let xn = x1 + this.maxLength / Math.cos(Math.acos(arccosArg) / 2)
+        let yn = y1 - this.maxLength / Math.sin(Math.acos(arccosArg) / 2)
+
+        // console.log('x', a, xn);
+        // console.log('y', a, yn);
+
+        // this.arc = { center: vertexes[1].center, arc: Math.acos(arccosArg) / 2 }
+        let v = new Vertex(xn, yn)
+        let t = new Vertex(0, yn)
+        let s = new Segment(vertexes[1], v)
+        let st = new Segment(t, v)
+
+        // this.helperFigure.addPoint(v)
+        // this.helperFigure.addSegment(s)
+        // this.helperFigure.addSegment(st)
+
+        let count = 0
+        // this.figure.allSegments.forEach(s => {
+        //     if (s.doIntersect(st)) {
+        //         s.setSegmentColor('red')
+        //         count++
+        //     }
+        // })
+
+        // await timer(1000)
+        // if (count % 2 === 0) {
+        //     console.log('OUT');
+        //     this.helperFigure.removeSegment(st)
+        //     this.helperFigure.removePoint(v)
+        //     this.helperFigure.removePoint(t)
+        //     this.arc = null
+
+        //     xn = x1 - this.maxLength / Math.cos(Math.acos(result) / 2)
+        //     yn = y1 + this.maxLength / Math.sin(Math.acos(result) / 2)
+        //     v = new Vertex(xn, yn)
+        //     t = new Vertex(0, yn)
+        //     s = new Segment(vertexes[1], v)
+        //     st = new Segment(t, v)
+        //     this.helperFigure.addPoint(v)
+        //     this.helperFigure.addSegment(s)
+        //     this.helperFigure.addSegment(st)
+        //     count = 0
+        //     this.figure.allSegments.forEach(s => {
+        //         if (s.doIntersect(st)) {
+        //             s.setSegmentColor('red')
+        //             count++
+        //         }
+        //     })
+        //     await timer(1000)
+        //     this.helperFigure.removeSegment(st)
+        //     this.helperFigure.removePoint(v)
+        //     this.helperFigure.removePoint(t)
+        //     this.arc = null
+        // }
+
+        // console.log('count', count)
+        return Math.acos(arccosArg)
     }
+
+    private getArccos(a: number, b: number, c: number) {
+        return (a * a + b * b - c * c) / (2 * a * b)
+    }
+
+    async colorSegmentYield(segs: Segment[]) {
+        // segs.forEach((s, ind) => {
+        //     s.Options = { width: 4, color: ind === 0 ? 'red' : 'green' }
+        // });
+    }
+
+    private setDefaultSegments(segs: Segment[]) {
+        segs.forEach(s => {
+            s.Options = { width: 2, color: 'black' }
+        });
+    }
+
+    private async colorVertexesYield(vertexes: Vertex[]) {
+        vertexes.forEach((v, i) => v.Options = { shape: 'square' })
+    }
+
+    private setDefaultVertex(vertexes: Vertex[]) {
+        vertexes.forEach((v, i) => v.setOriginanlOptions())
+    }
+
 
     async colorSegment(segs: Segment[], time?: number) {
         segs.forEach((s, ind) => {
@@ -162,8 +349,12 @@ export class Triangulation {
     }
 
     private getVertexesFromSegments(seg1: Segment, seg2: Segment): [Vertex, Vertex, Vertex] {
-        const vertex2 = seg1.includesPoint(seg2.AllPoints[0]) ? seg2.AllPoints[1] : seg2.AllPoints[0]
-        return [seg1.AllPoints[0], seg1.AllPoints[1], vertex2]
+
+        const commonVertex = seg1.includesPoint(seg2.AllPoints[0]) ? seg2.AllPoints[0] : seg2.AllPoints[1]
+        const firstVertex = seg1.AllPoints[0].isEqual(commonVertex) ? seg1.AllPoints[1] : seg1.AllPoints[0]
+        const lastVertex = seg2.AllPoints[0].isEqual(commonVertex) ? seg2.AllPoints[1] : seg2.AllPoints[0]
+
+        return [firstVertex, commonVertex, lastVertex]
     }
 
     private getCommonVertexFromSegments(seg1: Segment, seg2: Segment): Vertex | null {
@@ -179,6 +370,16 @@ export class Triangulation {
         }
 
         return null
+    }
+
+    private addArc(ctx: CanvasRenderingContext2D, center: Point, arc: number) { // can be removed
+        const radius = 20
+
+        ctx.beginPath()
+        ctx.lineWidth = 2
+        ctx.strokeStyle = 'red'
+        ctx.arc(center.xCoord, center.yCoord, radius, -Math.PI / 2, -arc)
+        ctx.stroke()
     }
 
     sortByClockWise() {
@@ -291,6 +492,18 @@ export class Triangulation {
     draw(ctx: CanvasRenderingContext2D) {
         for (const vertex of this.figure.allCircles) {
             vertex.draw(ctx)
+        }
+
+        for (const vertex of this.helperFigure.allCircles) {
+            vertex.draw(ctx)
+        }
+
+        for (const segment of this.helperFigure.allSegments) {
+            segment.draw(ctx)
+        }
+
+        if (this.arc) {
+            this.addArc(ctx, this.arc.center, this.arc.arc)
         }
     }
 }

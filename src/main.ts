@@ -4,12 +4,14 @@ import { Segment } from "./elements/segment";
 import { Vertex } from "./elements/Vertext";
 import { Figure } from "./figure";
 import { GraphEditor } from "./GraphEditor";
+import { Triangulation } from "./triangulation";
 // import { Circle, Point } from "./types";
 
 
 const canvasElement = document.getElementById('canvas') as (HTMLCanvasElement | null)
 const grabDotsBtn = document.getElementById('grabDotsBtn') as (HTMLButtonElement | null)
 const triangulateBtn = document.getElementById('triangulate') as (HTMLButtonElement | null)
+const startBtn = document.getElementById('start') as (HTMLButtonElement | null)
 
 // const dots: Circle[] = []
 
@@ -65,7 +67,7 @@ const p7 = new Vertex(286, 364, { color: 'aqua' })
 const p8 = new Vertex(304, 481, { color: 'chocolate' })
 const p9 = new Vertex(231, 446, { color: 'crimson' })
 const p10 = new Vertex(160, 502, { color: 'cyan' })
-const p11 = new Vertex(91, 426, { color: 'gold' })
+const p11 = new Vertex(91, 446, { color: 'gold' })
 const p12 = new Vertex(108, 252, { color: 'grey' })
 const p13 = new Vertex(156, 298, { color: 'navy' })
 const p14 = new Vertex(180, 233, { color: 'orange' })
@@ -103,9 +105,10 @@ if (grabDotsBtn) {
     })
 }
 
+let triang: Triangulation | null = null
 if (triangulateBtn) {
     triangulateBtn.addEventListener('click', () => {
-        graphEditor.triangulate()
+        triang = graphEditor.triangulate()
     })
 }
 
@@ -122,4 +125,25 @@ if (canvasElement) {
 
     // canvasElement.addEventListener('mousedown', setDot)
 
+}
+
+
+if (startBtn) {
+
+    let result: any = undefined
+    let gen: Generator | null = null
+    startBtn.addEventListener('click', () => {
+        if (triang) {
+
+            if (!result) {
+                gen = triang.calcVertextType()
+
+                result = gen.next()
+            } else {
+                result = gen.next()
+                console.log('resultresult', result);
+
+            }
+        }
+    })
 }
