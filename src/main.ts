@@ -62,13 +62,13 @@ const p2 = new Vertex(254, 175, { color: 'green' })
 const p3 = new Vertex(340, 108, { color: 'blue' })
 const p4 = new Vertex(340, 277, { color: 'yellow' })
 const p5 = new Vertex(405, 277, { color: 'brown' })
-const p6 = new Vertex(389, 395, { color: 'lime' })
+const p6 = new Vertex(389, 446, { color: 'lime' })
 const p7 = new Vertex(286, 364, { color: 'aqua' })
-const p8 = new Vertex(304, 481, { color: 'chocolate' })
+const p8 = new Vertex(304, 446, { color: 'chocolate' })
 const p9 = new Vertex(231, 446, { color: 'crimson' })
 const p10 = new Vertex(160, 502, { color: 'cyan' })
 const p11 = new Vertex(91, 446, { color: 'gold' })
-const p12 = new Vertex(108, 252, { color: 'grey' })
+const p12 = new Vertex(108, 233, { color: 'grey' })
 const p13 = new Vertex(156, 298, { color: 'navy' })
 const p14 = new Vertex(180, 233, { color: 'orange' })
 const p15 = new Vertex(131, 175, { color: 'pink' })
@@ -141,7 +141,7 @@ if (startBtn) {
                 result = gen.next()
             } else {
                 result = gen.next()
-                console.log('resultresult', result);
+                // console.log('resultresult', result);
 
             }
         }

@@ -18,8 +18,11 @@ export class Triangulation {
     centralVert: Vertex
     centralSegment: Segment
     connectionSegment: Segment
+    commontVertexCenter: Point
 
     boundarySegment: Segment
+    vertexCrossMap: Map<Vertex, [Segment, Segment][]>
+
     constructor(public figure: Figure, public helperFigure: Figure) {
 
         this.sortSegmentsInRow()
@@ -63,7 +66,7 @@ export class Triangulation {
     * calcVertextType() {
         let firstSegment: Segment = this.sortedSegments.pop()
         let seg1: Segment = firstSegment
-        // console.log('this.sortedSegments length', this.sortedSegments.length);
+        console.log('this.sortedSegments length', this.sortedSegments.length);
         let count = 1
         this.sortedSegments.push(firstSegment)
         let coloredVertexes: [Vertex, Vertex, Vertex] = [] as unknown as [Vertex, Vertex, Vertex]
@@ -168,30 +171,15 @@ export class Triangulation {
 
         let crossCount = 0
         let prevSegment: Segment
+        const accountedSegments = new Set<Segment>()
         this.sortedSegments.forEach(s => {
-            if (s.doIntersect(this.boundarySegment)) {
-                if (prevSegment) {
-                    // s.setSegmentColor('black')
-                    const commontVertex = prevSegment.getCommonVertex(s)
-                    if (commontVertex) {
-                        const p = new Point(commontVertex.center.xCoord, commontVertex.center.yCoord - 11)
-                        console.log('COMMON', commontVertex);
-                        commontVertex.setCenter = p
-                        // intersectArray.push({ vertex: commontVertex, segments: [prevSegment, s] })
-                        prevSegment = s
-                        return
-                    } else {
-                        prevSegment = s
-                    }
-                } else {
-                    prevSegment = s
-                    s.setSegmentColor('lime')
-                    console.log('INCR');
 
-                    crossCount++
-                }
+            if (s.doIntersect(this.boundarySegment)) {
+
             }
         })
+
+        console.log('accountedSegments', accountedSegments);
 
         console.log('crossCount', crossCount);
 
