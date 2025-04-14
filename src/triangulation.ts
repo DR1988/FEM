@@ -21,7 +21,13 @@ export class Triangulation {
     commontVertexCenter: Point
 
     boundarySegment: Segment
-    vertexCrossMap: Map<Vertex, [Segment, Segment][]>
+    vertexCrossMap: Map<Vertex,
+        {
+            // segments: [Segment, Segment],
+            angle: number,
+            angleVertex: Vertex
+            centralVertex: Vertex
+        }> = new Map()
 
     constructor(public figure: Figure, public helperFigure: Figure) {
 
@@ -73,7 +79,6 @@ export class Triangulation {
         let coloredSegments: Segment[] = []
 
         for (const segment of this.sortedSegments) {
-            console.log(count++);
             this.setDefaultVertex(coloredVertexes)
             this.setDefaultSegments(coloredSegments)
 
@@ -169,24 +174,75 @@ export class Triangulation {
 
         const intersectArray: { vertex: Vertex, segments: [Segment, Segment] }[] = []
 
-        let crossCount = 0
-        let prevSegment: Segment
-        const accountedSegments = new Set<Segment>()
-        this.sortedSegments.forEach(s => {
-
-            if (s.doIntersect(this.boundarySegment)) {
-
-            }
-        })
-
-        console.log('accountedSegments', accountedSegments);
-
-        console.log('crossCount', crossCount);
-
-
         const a = Math.hypot(x0 - x1, y0 - y1)
         const b = Math.hypot(x1 - x2, y1 - y2)
         const c = Math.hypot(x0 - x2, y0 - y2)
+
+        // quite simple math https://en.wikipedia.org/wiki/Law_of_cosines
+        const arccosArg = this.getArccos(a, b, c) // just arccos argument to calculate angle
+        console.log('arccosArg', arccosArg, Math.acos(arccosArg));
+
+        let crossCount = 0
+        let prevSegment: Segment
+        const accountedSegments = new Set<Segment>()
+        let prevCrossedInd = -2
+        let prevCrossedSegment: Segment = null
+        let shouldCalcAngle = true
+        let commonVertext: Vertex
+        this.sortedSegments.forEach((s, ind) => {
+            if (s.doIntersect(this.boundarySegment)) {
+                console.log('in');
+
+                commonVertext = prevCrossedSegment?.getCommonVertex(s)
+                if (commonVertext && this.boundarySegment.isPointOnSegment(commonVertext)) {
+                    console.log('COMMON');
+                    this.vertexCrossMap.set(vertexes[1], {
+                        angleVertex: vertexes[1],
+                        centralVertex: commonVertext,
+                        angle: 0
+                    })
+                    shouldCalcAngle = false
+                }
+                // if (ind - prevCrossedInd === 1) {
+                //     const commonVertext = prevCrossedSegment.getCommonVertex(s)
+                //     console.log('commonVertext', commonVertext);
+
+                //     this.vertexCrossMap.set(vertexes[1], {
+                //         angleVertex: vertexes[1],
+                //         centralVertex: this.centralVert,
+                //         angle: 0
+                //     })
+                // }
+
+                prevCrossedInd = ind
+                crossCount++
+            }
+            console.log('out');
+
+            prevCrossedSegment = s
+
+        })
+        if (shouldCalcAngle) {
+            if (crossCount % 2 !== 0) {
+                this.vertexCrossMap.set(vertexes[1], {
+                    angleVertex: vertexes[1],
+                    centralVertex: commonVertext,
+                    angle: Math.acos(arccosArg)
+                })
+            } else {
+                this.vertexCrossMap.set(vertexes[1], {
+                    angleVertex: vertexes[1],
+                    centralVertex: commonVertext,
+                    angle: 360 - Math.acos(arccosArg)
+                })
+            }
+        }
+        console.log('crossCount ----------', crossCount);
+        console.log('this.vertexCrossMap', this.vertexCrossMap);
+
+
+
+
 
         // const arccosArgFirst = this.getArccos(ox, a, firstDiag)
 
@@ -199,8 +255,6 @@ export class Triangulation {
         // console.log(x1, y1);
         // console.log(x2, y2);
 
-        // quite simple math https://en.wikipedia.org/wiki/Law_of_cosines
-        const arccosArg = this.getArccos(a, b, c) // just arccos argument to calculate angle
 
         // console.log('result', a, Math.acos(arccosArg) * 180 / Math.PI);
         // console.log('Math.cos(Math.acos(result) / 2', Math.acos(arccosArg) / 2 * 180 / Math.PI);
