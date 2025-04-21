@@ -170,7 +170,7 @@ export class GraphEditor {
 
             this.figure.allSegments.forEach(s => {
 
-                if (s.doIntersect(segment) && !s.hasSameEndPoint(segment)) {
+                if (s.doIntersectVect(segment) && !s.hasSameEndPoint(segment)) {
                     s.setSegmentColor('red')
                     this.foundIntersectSegment.set(s, true)
                 } else if (this.foundIntersectSegment.has(s)) {

@@ -180,7 +180,7 @@ export class Triangulation {
 
         // quite simple math https://en.wikipedia.org/wiki/Law_of_cosines
         const arccosArg = this.getArccos(a, b, c) // just arccos argument to calculate angle
-        console.log('arccosArg', arccosArg, Math.acos(arccosArg));
+        console.log('arccosArg', arccosArg, Math.acos(arccosArg) * 180 / Math.PI);
 
         let crossCount = 0
         let prevSegment: Segment
@@ -192,6 +192,10 @@ export class Triangulation {
         this.sortedSegments.forEach((s, ind) => {
             if (s.doIntersect(this.boundarySegment)) {
                 console.log('in');
+                this.figure.allCircles.forEach(vert => {
+                    console.log('this.boundarySegment.isPointOnSegment(vert) ', this.boundarySegment.isPointOnSegment(vert), vert);
+
+                })
 
                 commonVertext = prevCrossedSegment?.getCommonVertex(s)
                 if (commonVertext && this.boundarySegment.isPointOnSegment(commonVertext)) {
@@ -227,13 +231,13 @@ export class Triangulation {
                 this.vertexCrossMap.set(vertexes[1], {
                     angleVertex: vertexes[1],
                     centralVertex: commonVertext,
-                    angle: Math.acos(arccosArg)
+                    angle: Math.acos(arccosArg) * 180 / Math.PI
                 })
             } else {
                 this.vertexCrossMap.set(vertexes[1], {
                     angleVertex: vertexes[1],
                     centralVertex: commonVertext,
-                    angle: 360 - Math.acos(arccosArg)
+                    angle: 360 - Math.acos(arccosArg) * 180 / Math.PI
                 })
             }
         }

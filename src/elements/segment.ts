@@ -1,6 +1,7 @@
 import { Circle } from "./cirlce";
 import { Vertex } from "./Vertext";
 import { Point } from "./point";
+import { getIntersection } from "../utils";
 
 type Options = { width?: number, color?: string, dash?: [number, number] | [] }
 export class Segment {
@@ -110,6 +111,15 @@ export class Segment {
 
     checkOrientation(circle: Vertex) {
         orientation(this.p1.center, this.p2.center, circle.center)
+    }
+
+    doIntersectVect(segment: Segment) {
+        const { p1, p2 } = this
+        const { p1: q1, p2: q2 } = segment
+
+        const result = getIntersection(p1.center, p2.center, q1.center, q2.center)
+
+        return !!result
     }
 
     // easy one https://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/
